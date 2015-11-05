@@ -1,7 +1,14 @@
 {% extends "base.html" %}
 {% block content %}
+{% if user.is_authenticated %}
+<div class="jumbotron">
+  <h1>Welcome back!</h1>
+</div>
+{% else %}
 <div class="jumbotron">
   <h1>Welcome to the QU Sports Zone!</h1>
-  <p>Where you can choose which teams you want to follow</p>
+  <p>The place where you can pick your team and talk to others!</p>
+  <p><a class="btn btn-lg btn-primary" href="{% url 'registration_register'  %}">Sign up</a></p>
 </div>
+{% endif %}
 {% endblock %}
