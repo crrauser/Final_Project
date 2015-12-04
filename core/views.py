@@ -8,6 +8,9 @@ from django.views.generic import DetailView
 from django.views.generic import UpdateView
 from django.views.generic import DeleteView
 from django.core.exceptions import PermissionDenied
+from django.shortcuts import redirect
+from django.views.generic import FormView
+from .forms import *
 # Create your views here.
 class Home(TemplateView):
   template_name = "home.html"
@@ -94,9 +97,33 @@ class AnswerDeleteView(DeleteView):
 
   def get_success_url(self):
     return self.object.question.get_absolute_url()
-  
+
   def get_object(self, *args, **kwargs):
     object = super(AnswerDeleteView, self).get_object(*args, **kwargs)
     if object.user != self.request.user:
       raise PermissionDenied()
     return object
+
+class VoteFormView(FormView):
+  from_class = VoteForm
+
+  def form_valid(self, form):
+    user = self.request.user
+    question = Question.objects.get(pk=form.data["question"])
+    try:
+      answer = Answer.objects.get(pk=form.data["answer"])
+      prev_votes = Vote.objects.filter(user=user, question=question)
+      has_voted = (prev_votes.count()>0)
+      if not has_voted:
+        Vote.objects.create(user=user, question=question)
+      else:
+        prev_votes[0].delete()
+      return redirect(reverse('question_detail', args=[form.data["question"]]))
+    except:
+         prev_votes = Vote.objects.filter(user=user, question=question)
+         has_voted = (prev_votes.count()>0)
+         if not has_voted:
+          Vote.objects.create(user=user, question=question)
+    else:
+           prev_votes[0].delete()
+    return redirect('question_list')
